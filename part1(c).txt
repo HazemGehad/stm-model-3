@@ -2,6 +2,10 @@
 
 #include "USART.h"
 
+/*USART_begin function initializes the USART peripheral on the used controller STM32F401xx. 
+       USART_begin function parameter 'baudRate' represents the desired speed, in bits per second, at which data is transmitted and received in USART communication. 
+       USART_begin function returns no value; as the function has a 'void' return type. */
+
 void USART_begin(uint32_t baudRate) {
     /* Initialization of GPIO and USART settings */
     
