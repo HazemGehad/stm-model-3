@@ -2,12 +2,13 @@
 
 #include "USART.h"
 
-/*USART_begin function initializes the USART peripheral on the used controller STM32F401xx. 
-       USART_begin function parameter 'baudRate' represents the desired speed, in bits per second, at which data is transmitted and received in USART communication. 
+
+     /*USART_begin function initializes the USART peripheral on the used controller STM32F401xx.
+       USART_begin function parameter 'baudRate' represents the desired speed, in bits per second, at which data is transmitted and received in USART communication.
        USART_begin function returns no value; as the function has a 'void' return type. */
 
 void USART_begin(uint32_t baudRate) {
-    /* Initialization of GPIO and USART settings */
+       /* Initialization of GPIO and USART settings */
     
     // Enable GPIOA clock
     RCC->AHB1ENR |= 0x00000001;  // RCC_AHB1ENR_GPIOAEN
@@ -15,7 +16,7 @@ void USART_begin(uint32_t baudRate) {
     // Enable USART1 clock
     RCC->APB2ENR |= 0x00000010;  // RCC_APB2ENR_USART1EN
     
-    // Configure PA9 (TX) and PA10 (RX) as alternate function
+    // Configure PA9 (TX) and PA10 (RX) as alternate function 
     GPIOA->MODER |= 0x00000800;  // GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1
     GPIOA->AFR[1] |= (7 << ((9 % 8) * 4)) | (7 << ((10 % 8) * 4));
     
@@ -32,14 +33,24 @@ void USART_begin(uint32_t baudRate) {
     USART1->CR1 |= 0x00000001;  // USART_CR1_UE (Enable USART1)
 }
 
+    /* USART_available function: Avoiding reading from an empty buffer, this function checks, before attempting to read from the USART, whether there's data available in the receive buffer of the USART1 peripheral.
+       USART_available function parameters: Has no parameters.
+       USART_available function return values: Returns '1'or '0', respectively indicating whether there's available data for reading or not. */
 int USART_available(void) {
     return (USART1->SR & 0x00000020) ? 1 : 0;  // USART_SR_RXNE
 }
 
+    /* USART_read function: Reads a byte of data from the USART1 receive buffer, and waits until data is received before returning the byte.
+       USART_read function parameters: Has no parameters. It directly interacts and reads the received byte from both the Status Register and Data Register.
+       USART_read function return values: Returns the byte of data received from the USART1 receive buffer, which is the 'uint8_t' value. */
 uint8_t USART_read(void) {
     while (!(USART1->SR & 0x00000020));  // USART_SR_RXNE (Wait until data is received)
     return (uint8_t)(USART1->DR & 0xFF);
 }
+
+    /* USART_readBytes function: Reads a specified number of bytes from the USART1 receive buffer and stores them in the provided buffer array, and waits until the required number of bytes are received before returning.
+       USART_readBytes function parameters: 'buffer' & 'len'. 'buffer' is a pointer to the array where the received bytes will be stored, while 'len' is the number of bytes to read and store in the buffer.
+       USART_readBytes function return values: Returns no value; as the function has a 'void' return type. */
 
 void USART_readBytes(uint8_t* buffer, uint32_t len) {
     for (uint32_t i = 0; i < len; i++) {
@@ -48,10 +59,18 @@ void USART_readBytes(uint8_t* buffer, uint32_t len) {
     }
 }
 
+    /* USART_write function: Sends a single byte of data through the USART1 transmitter, and waits until the transmit buffer is empty before sending the byte.
+       USART_write function parameters: 'data' parameter that is the byte of data to be sent through the USART1 transmitter.
+       USART_write function return values: Returns no value; as the function has a 'void' return type. */
+
 void USART_write(uint8_t data) {
     while (!(USART1->SR & 0x00000080));  // USART_SR_TXE (Wait until the transmit buffer is empty)
     USART1->DR = data;
 }
+
+    /* USART_writeBytes function: Sends an array of bytes through the USART1 transmitter, iterating through each byte in the provided buffer, and calls the 'USART_write' function to send them one by one.
+       USART_writeBytes function parameters: 'buffer' & 'len'. 'buffer' is a pointer to an array of bytes to be sent through the USART1 transmitter, while 'len' is the number of bytes in the array (buffer) to be sent.
+       USART_writeBytes function return values: Returns no value; as the function has a 'void' return type. */
 
 void USART_writeBytes(const uint8_t* buffer, uint32_t len) {
     for (uint32_t i = 0; i < len; i++) {
@@ -59,11 +78,19 @@ void USART_writeBytes(const uint8_t* buffer, uint32_t len) {
     }
 }
 
+    /* USART_print function: Sends a null-terminated string through the USART1 transmitter, and iterates through each character in the provided string and calls the 'USART_write' function to send them one by one.
+       USART_print function parameters: 'str' is a pointer to a null-terminated string (an array of characters) to be sent through the USART1 transmitter.
+       USART_print function return values: Returns no value; as the function has a 'void' return type. */
+
 void USART_print(const char* str) {
     while (*str) {
         USART_write((uint8_t)(*str++));
     }
 }
+
+    /* USART_println function: Sends a null-terminated string followed by a newline sequence ('\r\n') through the USART1 transmitter.
+       USART_println function parameters: 'str' is a pointer to a null-terminated string (an array of characters) to be sent through the USART1 transmitter.
+       USART_println function return values: Returns no value; as the function has a 'void' return type. */
 
 void USART_println(const char* str) {
     USART_print(str);
